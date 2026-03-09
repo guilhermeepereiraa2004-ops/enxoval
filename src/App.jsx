@@ -55,7 +55,12 @@ function App() {
     e.preventDefault();
     if (!itemName || !itemLink) return;
 
-    let finalLink = itemLink;
+    let finalLink = itemLink.trim();
+    if (finalLink.startsWith('data:')) {
+      toast.error('Você colou uma imagem em vez do link da loja!');
+      return;
+    }
+
     if (!/^https?:\/\//i.test(finalLink)) {
       finalLink = 'http://' + finalLink;
     }

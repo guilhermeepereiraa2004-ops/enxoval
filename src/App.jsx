@@ -4,10 +4,8 @@ import toast, { Toaster } from 'react-hot-toast';
 import './index.css';
 
 function App() {
-  const [items, setItems] = useState(() => {
-    const saved = localStorage.getItem('@ListaEnxoval:items');
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [items, setItems] = useState([]);
+  const API_URL = 'http://localhost:5000';
   
   const [isAdmin, setIsAdmin] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
@@ -21,10 +19,19 @@ function App() {
   const [selectedItemToReserve, setSelectedItemToReserve] = useState(null);
   const [guestName, setGuestName] = useState('');
 
-  // Persist items
+  // Fetch items from backend
   useEffect(() => {
-    localStorage.setItem('@ListaEnxoval:items', JSON.stringify(items));
-  }, [items]);
+    const fetchItems = async () => {
+      try {
+        const response = await fetch(`${API_URL}/items`);
+        const data = await response.json();
+        setItems(data);
+      } catch (error) {
+        toast.error('Erro ao conectar com o banco de dados');
+      }
+    };
+    fetchItems();
+  }, []);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -38,35 +45,48 @@ function App() {
     }
   };
 
-  const handleAddItem = (e) => {
+  const handleAddItem = async (e) => {
     e.preventDefault();
     if (!itemName || !itemLink) return;
 
-    // fix link format if needed
     let finalLink = itemLink;
     if (!/^https?:\/\//i.test(finalLink)) {
       finalLink = 'http://' + finalLink;
     }
 
-    const newItem = {
-      id: crypto.randomUUID(),
-      name: itemName,
-      link: finalLink,
-      createdAt: new Date().toISOString()
-    };
+    try {
+      const response = await fetch(`${API_URL}/items`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name: itemName, link: finalLink })
+      });
+      
+      const savedItem = await response.json();
 
-    const newItems = [newItem, ...items].sort((a, b) => 
-      a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
-    );
+      const newItems = [savedItem, ...items].sort((a, b) => 
+        a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
+      );
 
-    setItems(newItems);
-    setItemName('');
-    setItemLink('');
+      setItems(newItems);
+      setItemName('');
+      setItemLink('');
+      toast.success('Presente adicionado!');
+    } catch (error) {
+      toast.error('Erro ao adicionar presente');
+    }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if(confirm('Tem certeza que deseja remover este item?')) {
-      setItems(items.filter(item => item.id !== id));
+      try {
+        await fetch(`${API_URL}/items/${id}`, { method: 'DELETE' });
+        setItems(items.filter(item => item._id !== id));
+        toast.success('Item removido!');
+      } catch (error) {
+        toast.error('Erro ao remover o item');
+      }
     }
   };
 
@@ -75,35 +95,51 @@ function App() {
     setShowReservationModal(true);
   };
 
-  const handleReserveSubmit = (e) => {
+  const handleReserveSubmit = async (e) => {
     e.preventDefault();
     if (!guestName.trim()) return;
 
-    setItems(items.map(item => {
-      if (item.id === selectedItemToReserve.id) {
-        return {
-          ...item,
-          reservedBy: guestName.trim(),
-          reservedAt: new Date().toISOString()
-        };
-      }
-      return item;
-    }));
+    try {
+      const response = await fetch(`${API_URL}/items/${selectedItemToReserve._id}/reserve`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ guestName: guestName.trim() })
+      });
+      
+      const updatedItem = await response.json();
 
-    setShowReservationModal(false);
-    setSelectedItemToReserve(null);
-    setGuestName('');
-  };
-
-  const handleCancelReservation = (id) => {
-    if(confirm('Tem certeza que deseja remover a reserva deste item?')) {
       setItems(items.map(item => {
-        if (item.id === id) {
-          const { reservedBy, reservedAt, ...rest } = item;
-          return rest;
+        if (item._id === selectedItemToReserve._id) {
+          return updatedItem;
         }
         return item;
       }));
+
+      setShowReservationModal(false);
+      setSelectedItemToReserve(null);
+      setGuestName('');
+      toast.success('Obrigado pelo seu presente!');
+    } catch (error) {
+      toast.error('Erro ao reservar presente');
+    }
+  };
+
+  const handleCancelReservation = async (id) => {
+    if(confirm('Tem certeza que deseja remover a reserva deste item?')) {
+      try {
+        const response = await fetch(`${API_URL}/items/${id}/cancel-reservation`, { method: 'PATCH' });
+        const updatedItem = await response.json();
+        
+        setItems(items.map(item => {
+          if (item._id === id) {
+            return updatedItem;
+          }
+          return item;
+        }));
+        toast.success('Reserva cancelada!');
+      } catch (error) {
+        toast.error('Erro ao cancelar reserva');
+      }
     }
   };
 
@@ -165,7 +201,7 @@ function App() {
           ) : (
             visibleItems.map((item, index) => (
               <li 
-                key={item.id} 
+                key={item._id} 
                 className={`item-card ${item.reservedBy ? 'reserved' : ''}`}
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
@@ -209,7 +245,7 @@ function App() {
                     <div className="admin-actions">
                       {item.reservedBy && (
                         <button 
-                          onClick={() => handleCancelReservation(item.id)} 
+                          onClick={() => handleCancelReservation(item._id)} 
                           className="btn-cancel-reservation"
                           title="Remover Reserva"
                         >
@@ -217,7 +253,7 @@ function App() {
                         </button>
                       )}
                       <button 
-                        onClick={() => handleDelete(item.id)} 
+                        onClick={() => handleDelete(item._id)} 
                         className="btn btn-danger"
                         title="Remover Item"
                       >
@@ -288,7 +324,6 @@ function App() {
                   type="text" 
                   className="input-field" 
                   autoFocus
-                  placeholder="Ex: Tio João"
                   value={guestName}
                   onChange={(e) => setGuestName(e.target.value)}
                   required

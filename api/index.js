@@ -1,24 +1,35 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-require('dotenv').config();
-
-const Item = require('./models/Item');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
 
-// MongoDB connection
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('✅ Conectado ao MongoDB'))
-  .catch((err) => console.error('❌ Erro no MongoDB:', err));
+let isConnected = false;
+const connectDB = async () => {
+  if (isConnected) return;
+  try {
+    const db = await mongoose.connect(process.env.MONGODB_URI);
+    isConnected = db.connections[0].readyState;
+  } catch (error) {
+    console.error('MongoDB connection error:', error);
+  }
+};
 
-// Rotas do nosso servidor
+const itemSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  link: { type: String, required: true },
+  reservedBy: { type: String, default: null },
+  reservedAt: { type: Date, default: null },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const Item = mongoose.models.Item || mongoose.model('Item', itemSchema);
 
 app.get('/api/items', async (req, res) => {
+  await connectDB();
   try {
     const items = await Item.find().sort({ name: 1 });
     res.json(items);
@@ -27,8 +38,8 @@ app.get('/api/items', async (req, res) => {
   }
 });
 
-// 2. Adicionar um novo item (Admin)
 app.post('/api/items', async (req, res) => {
+  await connectDB();
   try {
     const { name, link } = req.body;
     const newItem = new Item({ name, link });
@@ -39,8 +50,8 @@ app.post('/api/items', async (req, res) => {
   }
 });
 
-// 3. Deletar item (Admin)
 app.delete('/api/items/:id', async (req, res) => {
+  await connectDB();
   try {
     await Item.findByIdAndDelete(req.params.id);
     res.json({ message: 'Item removido' });
@@ -49,8 +60,8 @@ app.delete('/api/items/:id', async (req, res) => {
   }
 });
 
-// 4. Reservar o item (Dar o presente - Convidado)
 app.patch('/api/items/:id/reserve', async (req, res) => {
+  await connectDB();
   try {
     const { guestName } = req.body;
     const updatedItem = await Item.findByIdAndUpdate(
@@ -64,12 +75,12 @@ app.patch('/api/items/:id/reserve', async (req, res) => {
   }
 });
 
-// 5. Cancelar a reserva (Admin)
 app.patch('/api/items/:id/cancel-reservation', async (req, res) => {
+  await connectDB();
   try {
     const updatedItem = await Item.findByIdAndUpdate(
       req.params.id,
-      { $unset: { reservedBy: "", reservedAt: "" } }, // Remove o campo
+      { $unset: { reservedBy: "", reservedAt: "" } },
       { new: true }
     );
     res.json(updatedItem);
@@ -78,6 +89,4 @@ app.patch('/api/items/:id/cancel-reservation', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
-});
+module.exports = app;

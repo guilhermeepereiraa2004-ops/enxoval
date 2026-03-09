@@ -5,7 +5,7 @@ import './index.css';
 
 function App() {
   const [items, setItems] = useState([]);
-  const API_URL = `http://${window.location.hostname}:5000`;
+  const API_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:5000`;
   
   const [isAdmin, setIsAdmin] = useState(false);
   const [showLogin, setShowLogin] = useState(false);

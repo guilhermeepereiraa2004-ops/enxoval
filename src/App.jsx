@@ -24,14 +24,20 @@ function App() {
     const fetchItems = async () => {
       try {
         const response = await fetch(`${API_URL}/items`);
+        if (!response.ok) throw new Error('Falha no servidor');
         const data = await response.json();
-        setItems(data);
+        if (Array.isArray(data)) {
+          setItems(data);
+        } else {
+          setItems([]);
+        }
       } catch (error) {
+        setItems([]);
         toast.error('Erro ao conectar com o banco de dados');
       }
     };
     fetchItems();
-  }, []);
+  }, [API_URL]);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -63,10 +69,11 @@ function App() {
         body: JSON.stringify({ name: itemName, link: finalLink })
       });
       
+      if (!response.ok) throw new Error('Falha ao adicionar');
       const savedItem = await response.json();
 
       const newItems = [savedItem, ...items].sort((a, b) => 
-        a.name.localeCompare(b.name, 'pt-BR', { sensitivity: 'base' })
+        (a.name || '').localeCompare(b.name || '', 'pt-BR', { sensitivity: 'base' })
       );
 
       setItems(newItems);
@@ -81,7 +88,8 @@ function App() {
   const handleDelete = async (id) => {
     if(confirm('Tem certeza que deseja remover este item?')) {
       try {
-        await fetch(`${API_URL}/items/${id}`, { method: 'DELETE' });
+        const response = await fetch(`${API_URL}/items/${id}`, { method: 'DELETE' });
+        if (!response.ok) throw new Error('Falha ao remover');
         setItems(items.filter(item => item._id !== id));
         toast.success('Item removido!');
       } catch (error) {
@@ -106,6 +114,7 @@ function App() {
         body: JSON.stringify({ guestName: guestName.trim() })
       });
       
+      if (!response.ok) throw new Error('Falha ao reservar');
       const updatedItem = await response.json();
 
       setItems(items.map(item => {
@@ -128,6 +137,7 @@ function App() {
     if(confirm('Tem certeza que deseja remover a reserva deste item?')) {
       try {
         const response = await fetch(`${API_URL}/items/${id}/cancel-reservation`, { method: 'PATCH' });
+        if (!response.ok) throw new Error('Falha ao cancelar');
         const updatedItem = await response.json();
         
         setItems(items.map(item => {

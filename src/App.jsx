@@ -8,7 +8,9 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const API_URL = import.meta.env.PROD ? '/api' : 'http://localhost:5000/api';
   
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(() => {
+    return localStorage.getItem('@ListaEnxoval:isAdmin') === 'true';
+  });
   const [showLogin, setShowLogin] = useState(false);
   const [password, setPassword] = useState('');
   
@@ -49,6 +51,7 @@ function App() {
     e.preventDefault();
     if (password === 'Ggap121021') {
       setIsAdmin(true);
+      localStorage.setItem('@ListaEnxoval:isAdmin', 'true');
       setShowLogin(false);
       setPassword('');
       toast.success('Acesso liberado aos noivos!');
@@ -201,6 +204,7 @@ function App() {
 
   const logoutItem = () => {
     setIsAdmin(false);
+    localStorage.removeItem('@ListaEnxoval:isAdmin');
   };
 
   const visibleItems = isAdmin ? items : items.filter(item => !item.reservedBy);

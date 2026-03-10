@@ -1,15 +1,15 @@
 :root {
-  --primary: #c98276;
-  --primary-hover: #b36e63;
-  --primary-light: #fad6d0;
-  --accent: #E8B2A6;
-  --bg-color: #fcf9f9;
-  --text-dark: #2c2929;
-  --text-muted: #797171;
+  --primary: #8A9A86;
+  --primary-hover: #6B7B68;
+  --primary-light: #E4E9E2;
+  --accent: #D4C4A8;
+  --bg-color: #FAF9F6;
+  --text-dark: #2C3329;
+  --text-muted: #5C6658;
   --white: #ffffff;
   --glass-bg: rgba(255, 255, 255, 0.7);
   --glass-border: rgba(255, 255, 255, 0.5);
-  --shadow: 0 8px 32px 0 rgba(190, 150, 150, 0.15);
+  --shadow: 0 8px 32px 0 rgba(107, 123, 104, 0.12);
   --radius: 16px;
   --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
@@ -23,9 +23,10 @@
 body {
   font-family: 'Outfit', sans-serif;
   background-color: var(--bg-color);
-  background-image: radial-gradient(at 0% 0%, hsla(355, 52%, 92%, 1) 0px, transparent 50%),
-                    radial-gradient(at 100% 100%, hsla(17, 60%, 88%, 1) 0px, transparent 50%),
-                    radial-gradient(at 100% 0%, hsla(340, 48%, 95%, 1) 0px, transparent 50%);
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(138, 154, 134, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(212, 196, 168, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(138, 154, 134, 0.03) 0px, transparent 50%);
   background-attachment: fixed;
   color: var(--text-dark);
   min-height: 100vh;
@@ -109,7 +110,7 @@ body {
 .input-field {
   padding: 0.8rem 1rem;
   border-radius: 8px;
-  border: 1px solid rgba(201, 130, 118, 0.3);
+  border: 1px solid rgba(138, 154, 134, 0.3);
   background: var(--white);
   font-family: 'Outfit', sans-serif;
   font-size: 1rem;
@@ -141,13 +142,13 @@ body {
 .btn-primary {
   background: var(--primary);
   color: var(--white);
-  box-shadow: 0 4px 15px rgba(201, 130, 118, 0.4);
+  box-shadow: 0 4px 15px rgba(138, 154, 134, 0.4);
 }
 
 .btn-primary:hover {
   background: var(--primary-hover);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(201, 130, 118, 0.5);
+  box-shadow: 0 6px 20px rgba(107, 123, 104, 0.4);
 }
 
 .btn-primary:active {
@@ -188,7 +189,7 @@ body {
 
 .item-card.reserved {
   background: #fafafa;
-  border-color: rgba(201, 130, 118, 0.2);
+  border-color: rgba(138, 154, 134, 0.2);
 }
 
 .item-card.reserved .item-icon {
@@ -199,12 +200,12 @@ body {
 .item-card.reserved .item-name {
   color: #495057;
   text-decoration: line-through;
-  text-decoration-color: rgba(201, 130, 118, 0.5);
+  text-decoration-color: rgba(138, 154, 134, 0.5);
 }
 
 .item-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(201, 130, 118, 0.15);
+  box-shadow: 0 8px 25px rgba(138, 154, 134, 0.1);
   border-color: var(--primary-light);
 }
 
@@ -265,7 +266,7 @@ body {
 }
 
 .btn-link {
-  background: #fdf1ed;
+  background: var(--primary-light);
   color: var(--primary);
   padding: 0.6rem 1rem;
   border-radius: 20px;
@@ -294,13 +295,13 @@ body {
   font-size: 0.9rem;
   cursor: pointer;
   transition: var(--transition);
-  box-shadow: 0 4px 10px rgba(201, 130, 118, 0.3);
+  box-shadow: 0 4px 10px rgba(138, 154, 134, 0.2);
 }
 
 .btn-reserve:hover {
   background: var(--primary-hover);
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(201, 130, 118, 0.4);
+  box-shadow: 0 6px 15px rgba(107, 123, 104, 0.3);
 }
 
 .btn-cancel-reservation {

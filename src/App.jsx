@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Gift, Link as LinkIcon, Plus, Trash2, Shield, Heart } from 'lucide-react';
+import { Gift, Link as LinkIcon, Plus, Trash2, Shield, Heart, Loader } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 import './index.css';
 
 function App() {
   const [items, setItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const API_URL = import.meta.env.PROD ? '/api' : 'http://localhost:5000/api';
   
   const [isAdmin, setIsAdmin] = useState(false);
@@ -34,6 +35,8 @@ function App() {
       } catch (error) {
         setItems([]);
         toast.error('Erro ao conectar com o banco de dados');
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchItems();
@@ -206,7 +209,13 @@ function App() {
         )}
 
         <ul className="items-list">
-          {visibleItems.length === 0 ? (
+          {isLoading ? (
+            <div className="empty-state">
+              <Loader size={48} className="empty-icon spin" />
+              <h3>Acessando ao banco de dados...</h3>
+              <p>Carregando os presentes maravilhosos pra vocês!</p>
+            </div>
+          ) : visibleItems.length === 0 ? (
             <div className="empty-state">
               <Heart size={48} className="empty-icon" />
               <h3>Nenhum item adicionado ainda</h3>

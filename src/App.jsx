@@ -214,7 +214,7 @@ function App() {
       <Toaster position="top-center" reverseOrder={false} />
       
       <div className="header">
-        <h1>Nosso Enxoval</h1>
+        <h1>Enxoval <span style={{ marginLeft: '8px' }}>G e G</span></h1>
         <p>Lista de itens</p>
       </div>
 

@@ -212,8 +212,6 @@ function App() {
           {isLoading ? (
             <div className="empty-state">
               <Loader size={48} className="empty-icon spin" />
-              <h3>Acessando ao banco de dados...</h3>
-              <p>Carregando os presentes maravilhosos pra vocês!</p>
             </div>
           ) : visibleItems.length === 0 ? (
             <div className="empty-state">

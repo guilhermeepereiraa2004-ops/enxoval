@@ -60,6 +60,21 @@ app.delete('/api/items/:id', async (req, res) => {
   }
 });
 
+app.put('/api/items/:id', async (req, res) => {
+  await connectDB();
+  try {
+    const { name, link } = req.body;
+    const updatedItem = await Item.findByIdAndUpdate(
+      req.params.id,
+      { name, link },
+      { new: true }
+    );
+    res.json(updatedItem);
+  } catch (error) {
+    res.status(400).json({ error: 'Falha ao atualizar' });
+  }
+});
+
 app.patch('/api/items/:id/reserve', async (req, res) => {
   await connectDB();
   try {

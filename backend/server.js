@@ -49,6 +49,21 @@ app.delete('/api/items/:id', async (req, res) => {
   }
 });
 
+// Editar item (Admin)
+app.put('/api/items/:id', async (req, res) => {
+  try {
+    const { name, link } = req.body;
+    const updatedItem = await Item.findByIdAndUpdate(
+      req.params.id,
+      { name, link },
+      { new: true }
+    );
+    res.json(updatedItem);
+  } catch (error) {
+    res.status(400).json({ error: 'Falha ao atualizar' });
+  }
+});
+
 // 4. Reservar o item (Dar o presente - Convidado)
 app.patch('/api/items/:id/reserve', async (req, res) => {
   try {

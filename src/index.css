@@ -316,18 +316,33 @@ body {
 .btn-danger {
   background: transparent;
   color: #ff6b6b;
-  width: 36px;
-  height: 36px;
+  background: #fff0f0;
+  color: #fa5252;
+  border: 1px solid #ffe3e3;
+  padding: 0.5rem;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: 1px solid rgba(255, 107, 107, 0.2);
 }
 
 .btn-danger:hover {
-  background: #ff6b6b;
+  background: #fa5252;
+  color: white;
+}
+
+.btn-edit-item {
+  background: #f0f7ff;
+  color: #3b82f6;
+  border: 1px solid #e0efff;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.btn-edit-item:hover {
+  background: #3b82f6;
   color: white;
 }
 

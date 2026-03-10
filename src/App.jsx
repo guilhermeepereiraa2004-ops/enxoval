@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Gift, Link as LinkIcon, Plus, Trash2, Shield, Heart, Loader } from 'lucide-react';
+import { Gift, Link as LinkIcon, Plus, Trash2, Shield, Heart, Loader, Pencil } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 import './index.css';
 
@@ -19,6 +19,9 @@ function App() {
   const [showReservationModal, setShowReservationModal] = useState(false);
   const [selectedItemToReserve, setSelectedItemToReserve] = useState(null);
   const [guestName, setGuestName] = useState('');
+
+  // Editing state
+  const [editingItemId, setEditingItemId] = useState(null);
 
   // Fetch items from backend
   useEffect(() => {
@@ -54,7 +57,7 @@ function App() {
     }
   };
 
-  const handleAddItem = async (e) => {
+  const handleSubmitForm = async (e) => {
     e.preventDefault();
     if (!itemName || !itemLink) return;
 
@@ -69,28 +72,63 @@ function App() {
     }
 
     try {
-      const response = await fetch(`${API_URL}/items`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ name: itemName, link: finalLink })
-      });
-      
-      if (!response.ok) throw new Error('Falha ao adicionar');
-      const savedItem = await response.json();
+      if (editingItemId) {
+        const response = await fetch(`${API_URL}/items/${editingItemId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ name: itemName, link: finalLink })
+        });
+        
+        if (!response.ok) throw new Error('Falha ao atualizar');
+        const updatedItem = await response.json();
 
-      const newItems = [savedItem, ...items].sort((a, b) => 
-        (a.name || '').localeCompare(b.name || '', 'pt-BR', { sensitivity: 'base' })
-      );
+        setItems(items.map(item => item._id === editingItemId ? updatedItem : item).sort((a, b) => 
+          (a.name || '').localeCompare(b.name || '', 'pt-BR', { sensitivity: 'base' })
+        ));
 
-      setItems(newItems);
-      setItemName('');
-      setItemLink('');
-      toast.success('Presente adicionado!');
+        setEditingItemId(null);
+        setItemName('');
+        setItemLink('');
+        toast.success('Presente atualizado com sucesso!');
+      } else {
+        const response = await fetch(`${API_URL}/items`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ name: itemName, link: finalLink })
+        });
+        
+        if (!response.ok) throw new Error('Falha ao adicionar');
+        const savedItem = await response.json();
+
+        const newItems = [savedItem, ...items].sort((a, b) => 
+          (a.name || '').localeCompare(b.name || '', 'pt-BR', { sensitivity: 'base' })
+        );
+
+        setItems(newItems);
+        setItemName('');
+        setItemLink('');
+        toast.success('Presente adicionado!');
+      }
     } catch (error) {
-      toast.error('Erro ao adicionar presente');
+      toast.error(editingItemId ? 'Erro ao atualizar presente' : 'Erro ao adicionar presente');
     }
+  };
+
+  const handleEditClick = (item) => {
+    setEditingItemId(item._id);
+    setItemName(item.name);
+    setItemLink(item.link);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEdit = () => {
+    setEditingItemId(null);
+    setItemName('');
+    setItemLink('');
   };
 
   const handleDelete = async (id) => {
@@ -178,7 +216,7 @@ function App() {
 
       <div className="glass-card">
         {isAdmin && (
-          <form className="add-item-form" onSubmit={handleAddItem}>
+          <form className="add-item-form" onSubmit={handleSubmitForm}>
             <div className="form-group">
               <label>Nome do Produto</label>
               <input 
@@ -201,10 +239,17 @@ function App() {
                 required
               />
             </div>
-            <button type="submit" className="btn btn-primary">
-              <Plus size={20} />
-              Adicionar Presente
-            </button>
+            <div className="form-actions" style={{display: 'flex', gap: '0.8rem'}}>
+              <button type="submit" className="btn btn-primary">
+                {editingItemId ? <Pencil size={20} /> : <Plus size={20} />}
+                {editingItemId ? 'Salvar Alterações' : 'Adicionar Presente'}
+              </button>
+              {editingItemId && (
+                <button type="button" className="btn btn-secondary" onClick={cancelEdit}>
+                  Cancelar
+                </button>
+              )}
+            </div>
           </form>
         )}
 
@@ -265,6 +310,14 @@ function App() {
                   
                   {isAdmin && (
                     <div className="admin-actions">
+                      <button 
+                        onClick={() => handleEditClick(item)} 
+                        className="btn-edit-item"
+                        title="Editar Presente"
+                      >
+                        <Pencil size={18} />
+                      </button>
+
                       {item.reservedBy && (
                         <button 
                           onClick={() => handleCancelReservation(item._id)} 
